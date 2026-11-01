@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signal Safari — Muscle Lab 6.1</title>
+<style>
+  :root{
+    --teal:#0E7C7B; --yellow:#FFD23F; --coral:#FF6B6B; --sky:#4EA5D9;
+    --ink:#1B2A41; --ink2:#4a5a72; --paper:#FFFDF7; --line:#e7e3d8;
+    --ok:#0E7C7B; --warn:#FF6B6B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
+    background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.hd{font-family:"Baloo 2","Nunito",system-ui,sans-serif; font-weight:800; letter-spacing:.2px}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 18px 40px}
+
+  header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .title{font-size:30px;line-height:1.05}
+  .sub{color:var(--ink2);font-size:14px;font-weight:700}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
+  .chip{font-size:12.5px;font-weight:800;padding:5px 12px;border-radius:999px;background:#fff;border:2px solid var(--line);color:var(--ink2)}
+  .chip.t{background:var(--teal);border-color:var(--teal);color:#fff}
+  .chip.y{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
+  .chip.c{background:var(--coral);border-color:var(--coral);color:#fff}
+
+  .card{background:#fff;border:2.5px solid var(--line);border-radius:20px;padding:16px 18px}
+  .row{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
+  @media(max-width:860px){.row{grid-template-columns:1fr}}
+
+  .btn{
+    font-family:inherit;font-weight:800;font-size:16px;border:none;border-radius:999px;
+    padding:13px 22px;cursor:pointer;background:var(--teal);color:#fff;transition:transform .06s;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.y{background:var(--yellow);color:var(--ink)}
+  .btn.ghost{background:#fff;color:var(--ink);border:2.5px solid var(--line)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .btn.sm{font-size:13.5px;padding:9px 15px}
+
+  .status{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--ink2)}
+  .dot{width:12px;height:12px;border-radius:50%;background:#ccd2da;box-shadow:0 0 0 4px #eef1f5}
+  .dot.on{background:var(--ok);box-shadow:0 0 0 4px rgba(14,124,123,.16)}
+  .dot.err{background:var(--coral);box-shadow:0 0 0 4px rgba(255,107,107,.18)}
+
+  .big{font-family:"Baloo 2",sans-serif;font-size:56px;line-height:1;font-weight:800}
+  .cap{font-size:12px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--ink2)}
+
+  .meterwrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .meter{position:relative;width:96px;height:300px;border-radius:18px;background:#eef1f5;border:2.5px solid var(--line);overflow:hidden}
+  #fill{position:absolute;left:0;right:0;bottom:0;height:0%;background:linear-gradient(0deg,var(--teal),var(--sky));transition:height .06s linear;z-index:1}
+  .zone{position:absolute;left:-2.5px;right:-2.5px;border-top:4px dashed var(--coral);border-bottom:4px dashed var(--coral);background:rgba(255,210,63,.22);z-index:2}
+  .zonelab{position:absolute;left:-2px;right:-2px;text-align:center;font-size:10.5px;font-weight:800;color:var(--coral);z-index:3;text-shadow:0 1px 0 #fff}
+
+  .hud{display:flex;gap:18px;margin-top:6px}
+  .hud .n{font-family:"Baloo 2",sans-serif;font-size:26px;font-weight:800;line-height:1}
+  .stars{font-size:20px;letter-spacing:2px;color:#e2e7ee}
+  .stars .on{color:var(--yellow)}
+  canvas{width:100%;height:230px;display:block;border-radius:14px;background:#fff}
+  .graphbox{border:2.5px solid var(--line);border-radius:16px;overflow:hidden}
+
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink2)}
+  .num{font-variant-numeric:tabular-nums;font-weight:800}
+
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+  .stat{background:#f6f8fa;border-radius:14px;padding:10px 12px}
+  .stat .v{font-family:"Baloo 2",sans-serif;font-size:24px;font-weight:800}
+  .dotplot{height:96px;margin-top:10px}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13px;padding:6px 12px;border-radius:999px;border:2.5px solid var(--line);opacity:.4}
+  .badge.on{opacity:1;background:#f2fbf9;border-color:var(--teal);color:var(--teal)}
+  .foot{color:var(--ink2);font-size:12px;margin-top:26px;text-align:center;font-weight:700}
+  .note{background:#fff8e1;border:2.5px solid var(--yellow);border-radius:14px;padding:10px 14px;font-size:13.5px;font-weight:700;color:var(--ink)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:520px){.statgrid{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr}}
+  .milo{flex:0 0 auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="milo" id="milo"></div>
+    <div>
+      <div class="title hd">Signal Safari</div>
+      <div class="sub">Muscle Lab 6.1 · Signal Safari Web Lab</div>
+    </div>
+  </header>
+  <div class="chips">
+    <span class="chip t">Grade 6</span>
+    <span class="chip y">Mission: Wake the Bar</span>
+    <span class="chip c">1 sensor</span>
+    <span class="chip">~15 min</span>
+  </div>
+
+  <!-- CONNECT -->
+  <div class="card" id="connectCard" style="margin-bottom:16px">
+    <div class="grid2" style="align-items:center">
+      <div>
+        <h2 class="hd" style="margin:0 0 4px">Connect your Ganglion</h2>
+        <div class="sub" style="margin-bottom:12px">Turn on the sensor, then press Connect and pick it from the list.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn" id="btnConnect">Connect sensor</button>
+          <button class="btn ghost sm" id="btnMock">Use practice data →</button>
+          <span class="status"><span class="dot" id="dot"></span><span id="statusTxt">Not connected</span></span>
+        </div>
+        <div class="note" id="bleNote" style="display:none;margin-top:12px"></div>
+      </div>
+      <div>
+        <div class="cap" style="margin-bottom:8px">Your live muscle signal</div>
+        <div class="graphbox"><canvas id="graph" width="760" height="230"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAY + MATH -->
+  <div class="row">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <h2 class="hd" style="margin:0">Wake the Bar</h2>
+          <div class="sub">Relax to let the bar sleep. Squeeze to wake it up into the target!</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn y sm" id="btnPlay">Start</button>
+          <button class="btn ghost sm" id="btnReset">Reset</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 120px;gap:16px;margin-top:16px">
+        <div>
+          <div class="hud">
+            <div><div class="cap">Score</div><div class="n" id="score">0</div></div>
+            <div><div class="cap">In the zone</div><div class="n" id="zoneTime">0.0s</div></div>
+            <div><div class="cap">Time left</div><div class="n" id="timeLeft">30s</div></div>
+          </div>
+          <div style="margin-top:12px"><div class="cap">Stars</div><div class="stars" id="stars">★★★</div></div>
+          <div style="margin-top:14px">
+            <div class="cap" style="margin-bottom:6px">Signal strength</div>
+            <div class="big" id="strength">0</div>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn sm" id="btnTrial" disabled>Record a trial</button>
+            <span class="sub" id="trialHint" style="margin-left:8px">Play first, then record 3+ trials.</span>
+          </div>
+        </div>
+        <div class="meterwrap">
+          <div class="meter">
+            <div class="zone" id="zone"></div>
+            <div class="zonelab" id="zonelab">TARGET</div>
+            <div id="fill"></div>
+          </div>
+          <div class="cap">0–100</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="hd" style="margin:0 0 2px">Number Crunch</h2>
+      <div class="sub" style="margin-bottom:10px">Peak from each trial — read your dot plot like a detective.</div>
+      <canvas id="dotplot" class="dotplot" width="420" height="96"></canvas>
+      <div class="statgrid">
+        <div class="stat"><div class="cap">Mean</div><div class="v" id="sMean">–</div></div>
+        <div class="stat"><div class="cap">Median</div><div class="v" id="sMed">–</div></div>
+        <div class="stat"><div class="cap">Mode</div><div class="v" id="sMode">–</div></div>
+        <div class="stat"><div class="cap">Range</div><div class="v" id="sRange">–</div></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <span class="badge" id="bScout">⚡ Signal Scout</span>
+        <span class="badge" id="bPattern">🎯 Pattern Finder</span>
+        <span class="badge" id="bGraph">📈 Graph Guru</span>
+      </div>
+      <table style="margin-top:14px"><thead><tr><th>Trial</th><th>Peak</th></tr></thead><tbody id="trials"></tbody></table>
+      <div style="margin-top:12px"><button class="btn ghost sm" id="btnExport">Download trials (CSV)</button>
+        <button class="btn ghost sm" id="btnClear">Clear</button></div>
+    </div>
+  </div>
+
+  <div class="foot">Signal Safari · Muscle Lab 6.1 · Not for medical use</div>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

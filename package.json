@@ -1,0 +1,17 @@
+{
+  "name": "emg-web-lab",
+  "version": "0.1.0",
+  "description": "Signal Safari — simple Ganglion EMG web app (Grade 6, Mission 6.1)",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/vendor.js --bundle --format=esm --outfile=vendor/ganglion.js",
+    "deploy:dist": "mkdir -p dist/vendor && cp index.html app.js dist/ && cp vendor/ganglion.js dist/vendor/"
+  },
+  "dependencies": {
+    "ganglion-ble": "^1.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.0"
+  },
+  "license": "MIT"
+}
